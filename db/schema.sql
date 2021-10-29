@@ -20,6 +20,7 @@ CREATE TABLE employee(
   id INT PRIMARY KEY,
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
+  manager_id INT,
   FOREIGN KEY (roles_id),
   REFERENCES emp_role(id),
   
