@@ -1,70 +1,37 @@
-const questions = [
+const express = require('express');
+// Import and require mysql2
+const mysql = require('mysql2');
+
+const PORT = process.env.PORT || 3001;
+const app = express();
+
+// Express middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+// Connect to database
+const db = mysql.createConnection(
     {
-        // Make a selection:
-        type: 'list',
-        name: 'initPrompt',
-        message: 'What woukld you like to do? (use arrow keys)',
-        choices: [
-            'View all employees',
-            'Add department',
-            'Add role',
-            'Add employee',
-            'Update employee role',
-            'View all roles',
-            'View all departments',
-            'Quit',
-        ],
+        host: 'localhost',
+        // MySQL username,
+        user: 'root',
+        // MySQL password
+        password: '',
+        database: 'workplace_db',
     },
-    {
-        //Add new Department prompt
-        type: 'input',
-        name: 'addDept',
-        message: 'What is the name of the new department?',
-        when(answers) {
-            return answers.initPrompt === 'Add department';
-        },
-    },
-    {
-        //Add role to new department
-        type: 'input',
-        name: 'addRole',
-        message: 'What is the name of the new role? ',
-    },
-    {
-        //add salary to new role
-        type: 'input',
-        name: 'roleSal',
-        message: 'What is the starting salary for this new role?',
-    },
-    {
-        // join role salary and department to correct department
-        type: 'input',
-        name: 'whichDept',
-        message: 'which department does this role belong to?',
-    },
-    {
-        // Employee name
-        type: 'input',
-        name: 'empName',
-        message: "What is the employee's name?",
-    },
-    {
-        // Employee ID number
-        name: 'id',
-        type: 'input',
-        message: "What is the employee's ID number?",
-    },
-    {
-        // Employee email
-        type: 'input',
-        name: 'email',
-        message: "What is the employee's email address?",
-    },
-    {
-        // Confirm if another employee needs to be added
-        name: 'addAnother',
-        type: 'confirm',
-        message: 'Do you have another employee to add?',
-        choices: ['Yes', 'No'],
-    },
-];
+    console.log(`Connected to the workplace_db database.`)
+);
+
+// Query database
+db.query(db, function (err, results) {
+    console.log(results);
+});
+
+// Default response for any other request (Not Found)
+app.use((req, res) => {
+    res.status(404).end();
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

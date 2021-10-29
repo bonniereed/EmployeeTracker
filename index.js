@@ -6,7 +6,7 @@ const Employee = require('./lib/employee.js');
 const Role = require('./lib/role.js');
 
 const beginTable = ``;
-
+//function to delete role from database
 function deleteRole() {
     con.connect(function (err) {
         if (err) throw err;
@@ -17,6 +17,7 @@ function deleteRole() {
         });
     });
 }
+//function to update role in database
 function updateRole() {
     con.connect(function (err) {
         if (err) throw err;
@@ -27,7 +28,7 @@ function updateRole() {
         });
     });
 }
-
+// function to retrieve all employees
 function getEmployee() {
     con.connect(function (err) {
         if (err) throw err;
@@ -37,7 +38,7 @@ function getEmployee() {
         });
     });
 }
-
+// function to retrieve all departments
 function getDepartment() {
     con.connect(function (err) {
         if (err) throw err;
@@ -47,11 +48,11 @@ function getDepartment() {
         });
     });
 }
-
+//
 function getRole() {
     con.connect(function (err) {
         if (err) throw err;
-        con.query('SELECT * FROM employee', function (err, result, fields) {
+        con.query('SELECT * FROM emp_role', function (err, result, fields) {
             if (err) throw err;
             console.log(result);
         });
@@ -159,24 +160,6 @@ const questions = [
         type: 'input',
         name: 'updateRole',
         message: 'Which role would you like to update?',
-    },
-    {
-        // Employee name
-        type: 'input',
-        name: 'empName',
-        message: "What is the employee's name?",
-    },
-    {
-        // Employee ID number
-        name: 'id',
-        type: 'input',
-        message: "What is the employee's ID number?",
-    },
-    {
-        // Employee email
-        type: 'input',
-        name: 'email',
-        message: "What is the employee's email address?",
     },
     {
         // Confirm if another employee needs to be added
