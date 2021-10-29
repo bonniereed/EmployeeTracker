@@ -7,6 +7,57 @@ const Role = require('./lib/role.js');
 
 const beginTable = ``;
 
+function deleteRole() {
+    con.connect(function (err) {
+        if (err) throw err;
+        var sql = `DELETE FROM emp_role WHERE emp_role = ${emp_role.getRole()}`;
+        con.query(sql, function (err, result) {
+            if (err) throw err;
+            console.log('Number of records deleted: ' + result.affectedRows);
+        });
+    });
+}
+function updateRole() {
+    con.connect(function (err) {
+        if (err) throw err;
+        var sql = `UPDATE emp_role SET emp_role = ${emp_role.getRole()}`;
+        con.query(sql, function (err, result) {
+            if (err) throw err;
+            console.log('Number of records deleted: ' + result.affectedRows);
+        });
+    });
+}
+
+function getEmployee() {
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query('SELECT * FROM employee', function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+        });
+    });
+}
+
+function getDepartment() {
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query('SELECT * FROM department', function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+        });
+    });
+}
+
+function getRole() {
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query('SELECT * FROM employee', function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+        });
+    });
+}
+
 const questions = [
     {
         // Make a selection:
@@ -59,13 +110,55 @@ const questions = [
         choices: [
             'View all employees',
             'Add department',
-            'Add role',
             'Add employee',
             'Update employee role',
             'View all roles',
             'View all departments',
             'Quit',
         ],
+    },
+    {
+        //Add new Department prompt
+        type: 'input',
+        name: 'addFirstEmp',
+        message: 'What is the first name of the employee?',
+        when(answers) {
+            return answers.initPrompt === 'Add employee';
+        },
+    },
+    {
+        //Add new Department prompt
+        type: 'input',
+        name: 'addLastEmp',
+        message: 'What is the last name of the employee?',
+        when(answers) {
+            return answers.initPrompt === 'Add department';
+        },
+    },
+    {
+        // Make a selection:
+        type: 'list',
+        name: 'initPrompt',
+        message: 'What would you like to do? (use arrow keys)',
+        choices: [
+            'View all employees',
+            'Add department',
+            'Add employee',
+            'Update employee role',
+            'View all roles',
+            'View all departments',
+            'Quit',
+        ],
+    },
+    {
+        //Add new Department prompt
+        when(answers) {
+            getRole();
+            return answers.initPrompt === 'Update employee role';
+        },
+        type: 'input',
+        name: 'updateRole',
+        message: 'Which role would you like to update?',
     },
     {
         // Employee name
@@ -136,13 +229,11 @@ function getAnswers() {
                 checkAddAnother(answers, dbStr);
                 break;
             }
-            case 'Intern': {
+            case 'Add employee': {
                 //genrate Intern card html
-                const intern = new Intern(
-                    answers.empName,
-                    answers.id,
-                    answers.email,
-                    answers.school
+                const newEmp = new Employee(
+                    answers.addFirstEmp,
+                    answers.addLastEmp
                 );
                 const cardStr = cardCreationIntern(intern);
                 checkAddAnother(answers, cardStr);
