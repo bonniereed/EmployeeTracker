@@ -67,6 +67,7 @@ function startQuestions() {
             }
         });
 }
+startQuestions();
 //user selected to view all employees. This list of SQL in template literals will
 //show the end user the employee's name, role, salary, and department.
 function viewEmps() {
