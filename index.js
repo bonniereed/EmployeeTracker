@@ -18,59 +18,6 @@ connect.connect(function (err) {
     if (err) throw err;
     console.log('You are connected as: ' + connection.threadId)();
 });
-const beginTable = ``;
-//function to delete role from database
-function deleteRole() {
-    con.connect(function (err) {
-        if (err) throw err;
-        var sql = `DELETE FROM emp_role WHERE emp_role = ${emp_role.getRole()}`;
-        con.query(sql, function (err, result) {
-            if (err) throw err;
-            console.table('Number of records deleted: ' + result.affectedRows);
-        });
-    });
-}
-//function to update role in database
-function updateRole() {
-    con.connect(function (err) {
-        if (err) throw err;
-        var sql = `UPDATE emp_role SET emp_role = ${emp_role.getRole()}`;
-        con.query(sql, function (err, result) {
-            if (err) throw err;
-            console.table('Number of records deleted: ' + result.affectedRows);
-        });
-    });
-}
-// function to retrieve all employees
-function getEmployee() {
-    con.connect(function (err) {
-        if (err) throw err;
-        con.query('SELECT * FROM employee', function (err, result, fields) {
-            if (err) throw err;
-            console.table(result);
-        });
-    });
-}
-// function to retrieve all departments
-function getDepartment() {
-    con.connect(function (err) {
-        if (err) throw err;
-        con.query('SELECT * FROM department', function (err, result, fields) {
-            if (err) throw err;
-            console.table(result);
-        });
-    });
-}
-//
-function getRole() {
-    con.connect(function (err) {
-        if (err) throw err;
-        con.query('SELECT * FROM emp_role', function (err, result, fields) {
-            if (err) throw err;
-            console.table(result);
-        });
-    });
-}
 
 function startQuestions() {
     inquirer
@@ -210,19 +157,19 @@ function addEmp() {
         },
     ]).then;
     (function (answers) {
-        var newEmpMan = selectManager().indexOf(answers.choice) + 1;
+        var newEmpMan = selectManager().indexOf(answers.empMan) + 1;
         var query = connection.query(
             'INSERT INTO employee SET ? ',
             {
                 first_name: answers.addFName,
                 last_name: answers.addLName,
-                manager_id: answers.empMan,
+                manager_id: newEmpMan,
             },
             function (answers) {
                 var newEmpRole = selectRole().indexOf(answers.empRole) + 1;
                 'INSERT INTO emp_role SET ? ',
                     {
-                        emp_role: answers.empRole,
+                        emp_role: newEmpRole,
                     };
             },
             function (err) {
@@ -231,61 +178,5 @@ function addEmp() {
                 startQuestions();
             }
         );
-    });
-}
-
-const dbArr = [];
-const checkAddAnother = (answers, dbStr) => {
-    if (!answers.addAnother) {
-        cardArr.push(dbStr);
-        console.log(dbArr);
-        //construct html
-        const generatedDB = beginTable + dbArr.join() + dbHtml;
-        fs.writeFileSync('./db/seeds.sql', generatedDB);
-        //write your file
-        return;
-    } else {
-        dbArr.push(dbStr);
-        return getAnswers();
-    }
-};
-
-function getAnswers() {
-    return inquirer.prompt(questions).then((answers) => {
-        // console.log(answers.addAnother);
-        console.log(answers.addDept);
-        switch (answers.initPrompt) {
-            case 'Add department': {
-                //1. make a new instance of manager
-                const department = new Department(answers.addDept);
-                const whichDepartment = new Department(answers.whichDept);
-                const dbStr = dbAnsCreation(department, whichDepartment);
-
-                checkAddAnother(answers, dbStr);
-                //createManagerCard(manager)
-                //2. generate manager card html using your methods
-                //3. checkAddAnother
-                //5.
-                break;
-            }
-            case 'Add Role': {
-                //generate Engineer card html
-                //
-                const emp_role = new Role(answers.addRole, answers.roleSal);
-                const dbStr = dbAnsCreation(emp_role);
-                checkAddAnother(answers, dbStr);
-                break;
-            }
-            case 'Add employee': {
-                //genrate Intern card html
-                const newEmp = new Employee(
-                    answers.addFirstEmp,
-                    answers.addLastEmp
-                );
-                const cardStr = cardCreationIntern(intern);
-                checkAddAnother(answers, cardStr);
-                break;
-            }
-        }
     });
 }
