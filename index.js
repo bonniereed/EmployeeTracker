@@ -1,11 +1,6 @@
+//dependencies:
 const inquirer = require('inquirer');
-const fs = require('fs');
 const mysql = require('mysql');
-
-const Department = require('./lib/department.js');
-const Employee = require('./lib/employee.js');
-const Role = require('./lib/role.js');
-
 const connect = mysql.createConnection({
     host: 'localhost',
     port: 3001,
@@ -19,6 +14,7 @@ connect.connect(function (err) {
     console.log('You are connected as: ' + connection.threadId)();
 });
 
+//function that starts database application:
 function startQuestions() {
     inquirer
         .prompt([
@@ -39,6 +35,7 @@ function startQuestions() {
                 ],
             },
         ])
+        //switch statement that moves into next set of prompts based on user input:
         .then(function (answers) {
             switch (answers.choice) {
                 case 'View employees:':
@@ -61,7 +58,7 @@ function startQuestions() {
                     break;
 
                 case 'View employees by role:':
-                    viewAllRoles();
+                    viewRoles();
                     break;
 
                 case 'View all employees by Deparment:':
@@ -70,10 +67,11 @@ function startQuestions() {
             }
         });
 }
-
+//user selected to view all employees. This list of SQL in template literals will
+//show the end user the employee's name, role, salary, and department.
 function viewEmps() {
     connection.query(
-        "SELECT employee.first_name, employee.last_name, emp_role.emp_role, emp_role.salary, department.department_name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN emp_role on emp_role.id = employee.emp_role.id INNER JOIN department on department.id = emp_role.departments_id left join employee on employee.manager_id = e.id;",
+        "SELECT employee.first_name, employee.last_name, emp_role.emp_role, emp_role.salary, department.department_name, CONCAT(employee.first_name, ' ' ,employee.last_name) AS Manager FROM employee INNER JOIN emp_role on emp_role.id = employee.emp_role.id INNER JOIN department on department.id = emp_role.departments_id left join employee on employee.manager_id = emp_role.id;",
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -81,6 +79,8 @@ function viewEmps() {
         }
     );
 }
+//user selected to add a department.
+//this function will add a insert the user unput as a department.
 function addDept() {
     inquirer.prompt([
         {
@@ -103,6 +103,8 @@ function addDept() {
         );
     });
 }
+//user selected add role
+//this function will promp the user to enter the name of the role and the salary.
 function addRole() {
     inquirer.prompt([
         {
@@ -131,6 +133,9 @@ function addRole() {
         );
     });
 }
+//user selected add an employee.
+//this function will add the new employee's first name, lastname, and role based on the user's input.
+//the manager will be added based on user selection.
 function addEmp() {
     inquirer.prompt([
         {
@@ -165,7 +170,7 @@ function addEmp() {
                 last_name: answers.addLName,
                 manager_id: newEmpMan,
             },
-            function (answers) {
+            (function (answers) {
                 var newEmpRole = selectRole().indexOf(answers.empRole) + 1;
                 'INSERT INTO emp_role SET ? ',
                     {
@@ -176,7 +181,92 @@ function addEmp() {
                 if (err) throw err;
                 console.table(res);
                 startQuestions();
-            }
+            })
         );
     });
+}
+//user selected update employee role
+//this function will allow the user to select the target employee
+//from a raw list then pushes the updated data based on user entry.
+function updateEmp() {
+    connection.query(
+        'SELECT employee.first_name, employee.last_name, emp_role.emp_role FROM employee JOIN role ON employee.roles_id = emp_role.id;',
+        function (err, res) {
+            // console.log(res)
+            if (err) throw err;
+            console.log(res);
+            inquirer
+                .prompt([
+                    {
+                        name: 'updateFName',
+                        type: 'rawlist',
+                        choices: function () {
+                            var updateFName = [];
+                            for (var i = 0; i < res.length; i++) {
+                                updateFName.push(res[i].first_name);
+                            }
+                            return updateFName;
+                        },
+                        message: "What is the employee's first name? ",
+                    },
+                    {
+                        name: 'updateLName',
+                        type: 'rawlist',
+                        choices: function () {
+                            var updateLName = [];
+                            for (var i = 0; i < res.length; i++) {
+                                updateLName.push(res[i].last_name);
+                            }
+                            return updateLName;
+                        },
+                        message: "What is the employee's last name? ",
+                    },
+                    {
+                        name: 'updateRole',
+                        type: 'rawlist',
+                        message: "What is the Employee's new role? ",
+                        choices: selectRole(),
+                    },
+                ])
+                .then(function (answers) {
+                    var updateRole =
+                        selectRole().indexOf(answers.updateRole) + 1;
+                    connection.query(
+                        'UPDATE employee SET WHERE ?',
+                        {
+                            role_id: updateRole,
+                        },
+                        function (err) {
+                            if (err) throw err;
+                            console.table(answers);
+                            startPrompt();
+                        }
+                    );
+                });
+        }
+    );
+}
+//user selected view all roles
+//this function will retrieve the first name, last name, employee role, and role id.
+function viewRoles() {
+    connection.query(
+        'SELECT employee.first_name, employee.last_name, emp_role.emp_role AS Role FROM employee JOIN role ON employee.roles_id = emp_role.id;',
+        function (err, res) {
+            if (err) throw err;
+            console.table(res);
+            startPrompt();
+        }
+    );
+}
+//user selected view all departments
+//this function will retrieve the first name, last name, department name, employee role and department id.
+function viewDept() {
+    connection.query(
+        'SELECT employee.first_name, employee.last_name, department.department_name AS Department FROM employee JOIN role ON employee.roles_id = emp_role.id JOIN department ON emp_role.departments_id = department.id ORDER BY employee.id;',
+        function (err, res) {
+            if (err) throw err;
+            console.table(res);
+            startQuestions();
+        }
+    );
 }
