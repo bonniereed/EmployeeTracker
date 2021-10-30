@@ -1,17 +1,17 @@
 //dependencies:
 const inquirer = require('inquirer');
-const mysql = require('mysql');
-const connect = mysql.createConnection({
+const mysql = require('mysql2');
+const connection = mysql.createConnection({
     host: 'localhost',
-    port: 3001,
+    port: 3306,
     user: 'root',
     password: '',
     database: 'workplace_db',
 });
 
-connect.connect(function (err) {
+connection.connect(function (err) {
     if (err) throw err;
-    console.log('You are connected as: ' + connection.threadId)();
+    console.log('You are connected as: ' + connection.threadId);
 });
 
 //function that starts database application:
@@ -28,9 +28,9 @@ function startQuestions() {
                     'Add department',
                     'Add role',
                     'Add employee',
-                    'Update employee role',
-                    'View all roles',
-                    'View all departments',
+                    'Update employee',
+                    'View employees by role:',
+                    'View all employees by department:',
                     'Quit',
                 ],
             },
@@ -38,7 +38,7 @@ function startQuestions() {
         //switch statement that moves into next set of prompts based on user input:
         .then(function (answers) {
             switch (answers.choice) {
-                case 'View employees:':
+                case 'View all employees:':
                     viewEmps();
                     break;
 
@@ -72,7 +72,7 @@ startQuestions();
 //show the end user the employee's name, role, salary, and department.
 function viewEmps() {
     connection.query(
-        "SELECT employee.first_name, employee.last_name, emp_role.emp_role, emp_role.salary, department.department_name, CONCAT(employee.first_name, ' ' ,employee.last_name) AS Manager FROM employee INNER JOIN emp_role on emp_role.id = employee.emp_role.id INNER JOIN department on department.id = emp_role.departments_id left join employee on employee.manager_id = emp_role.id;",
+        "SELECT employee.first_name, employee.last_name, emp_role.emp_role, emp_role.salary, department.department_name, CONCAT(employee.first_name, ' ' ,employee.last_name) AS Manager FROM employee INNER JOIN emp_role on emp_role.department.id = employee.emp_role.id INNER JOIN department on department.id = emp_role.departments_id left join employee on employee.manager_id = emp_role.id;",
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -191,7 +191,7 @@ function addEmp() {
 //from a raw list then pushes the updated data based on user entry.
 function updateEmp() {
     connection.query(
-        'SELECT employee.first_name, employee.last_name, FROM employee JOIN emp_role ON emp_role.roles_id = emp_role.id;',
+        'SELECT employee.first_name, employee.last_name, FROM employee JOIN emp_role ON emp_role.role_id = emp_role.id;',
         function (err, res) {
             // console.log(res)
             if (err) throw err;
@@ -251,7 +251,7 @@ function updateEmp() {
 //this function will retrieve the first name, last name, employee role, and role id.
 function viewRoles() {
     connection.query(
-        'SELECT employee.first_name, employee.last_name, emp_role.emp_role AS Role FROM employee JOIN role ON employee.roles_id = emp_role.id;',
+        'SELECT employee.first_name, employee.last_name, emp_role.emp_role AS Role FROM employee JOIN role ON employee.role_id = emp_role.id;',
         function (err, res) {
             if (err) throw err;
             console.table(res);
