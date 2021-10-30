@@ -14,65 +14,12 @@ connection.connect(function (err) {
     console.log('You are connected as: ' + connection.threadId);
 });
 
-//function that starts database application:
-function startQuestions() {
-    inquirer
-        .prompt([
-            {
-                // Make a selection:
-                type: 'list',
-                name: 'initPrompt',
-                message: 'What would you like to do? (use arrow keys)',
-                choices: [
-                    'View all employees',
-                    'Add department',
-                    'Add role',
-                    'Add employee',
-                    'Update employee',
-                    'View employees by role:',
-                    'View all employees by department:',
-                    'Quit',
-                ],
-            },
-        ])
-        //switch statement that moves into next set of prompts based on user input:
-        .then(function (answers) {
-            switch (answers.choice) {
-                case 'View all employees:':
-                    viewEmps();
-                    break;
-
-                case 'Add department':
-                    addDept();
-                    break;
-
-                case 'Add role':
-                    addRole();
-                    break;
-                case 'Add employee':
-                    addEmp();
-                    break;
-
-                case 'Update employee':
-                    updateEmp();
-                    break;
-
-                case 'View employees by role:':
-                    viewRoles();
-                    break;
-
-                case 'View all employees by Deparment:':
-                    viewDept();
-                    break;
-            }
-        });
-}
-startQuestions();
 //user selected to view all employees. This list of SQL in template literals will
 //show the end user the employee's name, role, salary, and department.
 function viewEmps() {
+    console.log('view emps is working!!');
     connection.query(
-        "SELECT employee.first_name, employee.last_name, emp_role.emp_role, emp_role.salary, department.department_name, CONCAT(employee.first_name, ' ' ,employee.last_name) AS Manager FROM employee INNER JOIN emp_role on emp_role.department.id = employee.emp_role.id INNER JOIN department on department.id = emp_role.departments_id left join employee on employee.manager_id = emp_role.id;",
+        'SELECT * FROM emp_role JOIN employee ON emp_role.id = employee.role_id;',
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -83,6 +30,7 @@ function viewEmps() {
 //user selected to add a department.
 //this function will add a insert the user unput as a department.
 function addDept() {
+    console.log('Add depts is working!!');
     inquirer.prompt([
         {
             name: 'addDept',
@@ -191,7 +139,7 @@ function addEmp() {
 //from a raw list then pushes the updated data based on user entry.
 function updateEmp() {
     connection.query(
-        'SELECT employee.first_name, employee.last_name, FROM employee JOIN emp_role ON emp_role.role_id = emp_role.id;',
+        'SELECT * FROM emp_role JOIN employee ON emp_role.id = employee.role_id;',
         function (err, res) {
             // console.log(res)
             if (err) throw err;
@@ -251,7 +199,7 @@ function updateEmp() {
 //this function will retrieve the first name, last name, employee role, and role id.
 function viewRoles() {
     connection.query(
-        'SELECT employee.first_name, employee.last_name, emp_role.emp_role AS Role FROM employee JOIN role ON employee.role_id = emp_role.id;',
+        'SELECT * FROM emp_role JOIN employee ON emp_role.id = employee.role_id;',
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -263,7 +211,7 @@ function viewRoles() {
 //this function will retrieve the first name, last name, department name, employee role and department id.
 function viewDept() {
     connection.query(
-        'SELECT employee.first_name, employee.last_name, department.department_name AS Department FROM employee JOIN role ON employee.roles_id = emp_role.id JOIN department ON emp_role.departments_id = department.id ORDER BY employee.id;',
+        'SELECT * FROM department JOIN emp_role ON department.id = emp_role.id;',
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -271,3 +219,58 @@ function viewDept() {
         }
     );
 }
+
+function startQuestions() {
+    inquirer
+        .prompt([
+            {
+                // Make a selection:
+                type: 'list',
+                name: 'initPrompt',
+                message: 'What would you like to do? (use arrow keys)',
+                choices: [
+                    'View all employees',
+                    'Add department',
+                    'Add role',
+                    'Add employee',
+                    'Update employee',
+                    'View employees by role:',
+                    'View all employees by department:',
+                    'Quit',
+                ],
+            },
+        ])
+        //switch statement that moves into next set of prompts based on user input:
+        .then(function (answers) {
+            console.log(answers.initPrompt);
+            switch (answers.initPrompt) {
+                case 'View all employees':
+                    viewEmps();
+                    break;
+
+                case 'Add department':
+                    addDept();
+                    break;
+
+                case 'Add role':
+                    addRole();
+                    break;
+                case 'Add employee':
+                    addEmp();
+                    break;
+
+                case 'Update employee':
+                    updateEmp();
+                    break;
+
+                case 'View employees by role:':
+                    viewRoles();
+                    break;
+
+                case 'View all employees by Deparment:':
+                    viewDept();
+                    break;
+            }
+        });
+}
+startQuestions();
