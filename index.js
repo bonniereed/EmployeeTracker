@@ -191,7 +191,7 @@ function addEmp() {
 //from a raw list then pushes the updated data based on user entry.
 function updateEmp() {
     connection.query(
-        'SELECT employee.first_name, employee.last_name, emp_role.emp_role FROM employee JOIN role ON employee.roles_id = emp_role.id;',
+        'SELECT employee.first_name, employee.last_name, FROM employee JOIN emp_role ON emp_role.roles_id = emp_role.id;',
         function (err, res) {
             // console.log(res)
             if (err) throw err;
