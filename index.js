@@ -1,6 +1,10 @@
 //dependencies:
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
+let deptArr = [];
+let roleArr = [];
+let empArr = [];
+let manArr = [];
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
@@ -12,21 +16,20 @@ const connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     console.log('You are connected as: ' + connection.threadId);
+    startQuestions();
 });
 
 //user selected to view all employees. This list of SQL in template literals will
 //show the end user the employee's name, role, salary, and department.
 function viewEmps() {
     console.log('view emps is working!!');
-    connection.query(
-        'SELECT * FROM emp_role JOIN employee ON emp_role.id = employee.role_id;',
-        function (err, res) {
-            if (err) throw err;
-            console.table(res);
-            startQuestions();
-        }
-    );
+    connection.query('SELECT * FROM employee;', function (err, res) {
+        if (err) throw err;
+        console.table(res);
+    });
+    startQuestions();
 }
+
 //user selected to add a department.
 //this function will add a insert the user unput as a department.
 function addDept() {
@@ -39,22 +42,24 @@ function addDept() {
         },
     ]).then;
     (function (answers) {
-        var query = connection.query(
+        connection.query(
             'INSERT INTO department SET ? ',
             {
-                name: answers.addDept,
+                department_name: answers.addDept,
             },
             function (err) {
                 if (err) throw err;
                 console.table(res);
-                startQuestions();
             }
         );
+        startQuestions();
     });
 }
+
 //user selected add role
 //this function will promp the user to enter the name of the role and the salary.
 function addRole() {
+    ('Add role is working!!');
     inquirer.prompt([
         {
             name: 'addRole',
@@ -66,158 +71,166 @@ function addRole() {
             type: 'input',
             message: 'What is the salary for this role?',
         },
+        {
+            name: 'addToDepartment',
+            type: 'input',
+            message: 'Which department does this role belong to?',
+        },
     ]).then;
     (function (answers) {
-        var query = connection.query(
-            'INSERT INTO department SET ? ',
+        let deptId;
+        for (let de = 0; de < res.length; de++) {
+            if (res[de].department_id == answer.addToDepartment) {
+                deptId = res[de].department_id;
+            }
+        }
+        connection.query(
+            'INSERT INTO emp_role SET ? ',
             {
-                name: answers.addRole,
-                name: answers.addSal,
+                emp_role: answers.addRole,
+                salary: answers.addSal,
+                department_id: deptId,
             },
             function (err) {
                 if (err) throw err;
                 console.table(res);
-                startQuestions();
             }
         );
+        startQuestions();
     });
 }
+
 //user selected add an employee.
 //this function will add the new employee's first name, lastname, and role based on the user's input.
 //the manager will be added based on user selection.
 function addEmp() {
-    inquirer.prompt([
-        {
-            name: 'addFName',
-            type: 'input',
-            message: "What is the employee's first name?",
-        },
-        {
-            name: 'addLName',
-            type: 'input',
-            message: "What is the employee's last name?",
-        },
-        {
-            name: 'empRole',
-            type: 'list',
-            message: "What is the new employee's role? ",
-            choices: selectRole(),
-        },
-        {
-            name: 'empMan',
-            type: 'rawlist',
-            message: 'Who will this employee report to?',
-            choices: selectMan(),
-        },
-    ]).then;
-    (function (answers) {
-        var newEmpMan = selectManager().indexOf(answers.empMan) + 1;
-        var query = connection.query(
-            'INSERT INTO employee SET ? ',
-            {
-                first_name: answers.addFName,
-                last_name: answers.addLName,
-                manager_id: newEmpMan,
-            },
-            (function (answers) {
-                var newEmpRole = selectRole().indexOf(answers.empRole) + 1;
-                'INSERT INTO emp_role SET ? ',
-                    {
-                        emp_role: newEmpRole,
-                    };
-            },
-            function (err) {
-                if (err) throw err;
-                console.table(res);
-                startQuestions();
-            })
-        );
+    ('Add emp is working!!');
+    connection.query(
+        `SELECT concat employee.first_name, " ", employee.last_name AS name FROM employee`,
+        function (err, res) {
+            if (err) throw err;
+            empArr = [];
+            for (i = 0; i < employee.length; i++) {
+                empArr.push(employee[i].name);
+            }
+        }
+    );
+    connection.query(`SELECT * FROM emp_role`, function (err, res2) {
+        if (err) throw err;
     });
+    inquirer
+        .prompt([
+            {
+                name: 'empRole',
+                type: 'list',
+                message: "What is the new employee's role? ",
+                choices: roleArr,
+            },
+            {
+                name: 'empMan',
+                type: 'rawlist',
+                message: 'Who will this employee report to?',
+                choices: manArr,
+            },
+        ])
+        .then(function (answers) {
+            let roleId;
+            for (let ro = 0; ro < res.length; ro++) {
+                if (res[ro].role_id == answer.empRole) {
+                    roleId = res[ro].emp_role;
+                }
+            }
+            var manId;
+            for (let man = 0; man < res2.length; man++) {
+                if (res2[man].manager_id == answer.empMan) {
+                    manId = res2[man].manager_id;
+                }
+            }
+            connection.query(
+                `UPDATE employee SET role_id = ? WHERE employee.id = (SELECT employee.id FROM(SELECT employee.id FROM employee WHERE CONCAT(first_name," ",last_name) = ?)AS name)`,
+                [roleID, answer.empArr],
+
+                function (err) {
+                    if (err) throw err;
+                }
+            );
+            startQuestions();
+        });
 }
-//user selected update employee role
-//this function will allow the user to select the target employee
-//from a raw list then pushes the updated data based on user entry.
+
 function updateEmp() {
+    ('Update emp is working!!');
     connection.query(
-        'SELECT * FROM emp_role JOIN employee ON emp_role.id = employee.role_id;',
-        function (err, res) {
-            // console.log(res)
-            if (err) throw err;
-            console.log(res);
-            inquirer
-                .prompt([
-                    {
-                        name: 'updateFName',
-                        type: 'rawlist',
-                        choices: function () {
-                            var updateFName = [];
-                            for (var i = 0; i < res.length; i++) {
-                                updateFName.push(res[i].first_name);
-                            }
-                            return updateFName;
-                        },
-                        message: "What is the employee's first name? ",
-                    },
-                    {
-                        name: 'updateLName',
-                        type: 'rawlist',
-                        choices: function () {
-                            var updateLName = [];
-                            for (var i = 0; i < res.length; i++) {
-                                updateLName.push(res[i].last_name);
-                            }
-                            return updateLName;
-                        },
-                        message: "What is the employee's last name? ",
-                    },
-                    {
-                        name: 'updateRole',
-                        type: 'rawlist',
-                        message: "What is the Employee's new role? ",
-                        choices: selectRole(),
-                    },
-                ])
-                .then(function (answers) {
-                    var updateRole =
-                        selectRole().indexOf(answers.updateRole) + 1;
-                    connection.query(
-                        'UPDATE employee SET WHERE ?',
-                        {
-                            role_id: updateRole,
-                        },
-                        function (err) {
-                            if (err) throw err;
-                            console.table(answers);
-                            startPrompt();
-                        }
-                    );
-                });
-        }
-    );
-}
-//user selected view all roles
-//this function will retrieve the first name, last name, employee role, and role id.
-function viewRoles() {
-    connection.query(
-        'SELECT * FROM emp_role JOIN employee ON emp_role.id = employee.role_id;',
+        `SELECT concat employee.first_name, " ", employee.last_name AS name FROM employee`,
         function (err, res) {
             if (err) throw err;
-            console.table(res);
-            startPrompt();
+            empArr = [];
+            for (i = 0; i < employee.length; i++) {
+                empArr.push(employee[i].name);
+            }
         }
     );
+    connection.query(`SELECT * FROM emp_role`, function (err, res2) {
+        if (err) throw err;
+    });
+    inquirer
+        .prompt([
+            {
+                name: 'empChoice',
+                type: 'list',
+                message: 'Which employee would you like to update?',
+                choices: empArr,
+            },
+            {
+                name: 'empRole',
+                type: 'list',
+                message: 'What is the employees role?',
+                choices: roleArr,
+            },
+        ])
+        .then(function (answers) {
+            let roleId;
+            for (let ro = 0; ro < res.length; ro++) {
+                if (res[ro].role_id == answer.empRole) {
+                    roleId = res[ro].emp_role;
+                }
+            }
+            connection.query(
+                `UPDATE employee SET role_id = ? WHERE employee.id = (SELECT employee.id FROM(SELECT employee.id FROM employee WHERE CONCAT(first_name," ",last_name) = ?)AS name)`,
+                [roleID, answer.empRole],
+                function (err) {
+                    if (err) throw err;
+                }
+            );
+            startQuestions();
+        });
 }
+
 //user selected view all departments
 //this function will retrieve the first name, last name, department name, employee role and department id.
 function viewDept() {
-    connection.query(
-        'SELECT * FROM department JOIN emp_role ON department.id = emp_role.id;',
-        function (err, res) {
-            if (err) throw err;
-            console.table(res);
-            startQuestions();
-        }
-    );
+    ('View depts is working!!');
+    connection.query('SELECT * FROM department', function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        startQuestions();
+    });
+}
+function viewRoles() {
+    console.log('view roles is working!!');
+    connection.query('SELECT * FROM emp_role;', function (err, res) {
+        if (err) throw err;
+        console.table(res);
+    });
+    startQuestions();
+}
+function viewDept() {
+    console.log('view dept is working!!');
+    connection.query('SELECT * FROM department;', function (err, res) {
+        if (err) throw err;
+        console.table(res);
+    });
+    startQuestions();
 }
 
 function startQuestions() {
@@ -273,4 +286,3 @@ function startQuestions() {
             }
         });
 }
-startQuestions();
