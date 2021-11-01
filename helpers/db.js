@@ -1,4 +1,5 @@
-const connection = require('./helpers/connection.js');
+const connection = require('./connection.js');
+
 class db {
     constructor(connection) {
         this.connection = connection;
@@ -6,7 +7,7 @@ class db {
     addDept(dept) {
         return this.connection
             .promise()
-            .query(`INSERT INTO department SET ? `, dept);
+            .query('INSERT INTO department SET department_name', dept);
     }
     addRole(role) {
         return this.connection
@@ -37,4 +38,4 @@ class db {
     }
 }
 
-module.exports = db;
+module.exports = new db(connection);
