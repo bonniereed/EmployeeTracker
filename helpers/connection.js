@@ -1,15 +1,12 @@
-// get the client
+//requiring mysql2
 const mysql = require('mysql2');
-
-// create the connection to database
+//connection
 const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
+    host: '127.0.0.1',
     user: 'root',
     password: '',
     database: 'workplace_db',
 });
-
 connection.connect(function (err) {
     if (err) throw err;
     console.log('You are connected as: ' + connection.threadId);
